@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Events, Collection, REST, Routes, MessageFlags, InteractionResponseFlags } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const poll = require('./commands/poll.js');
 
 // Create a new client instance
 const client = new Client({
@@ -13,8 +14,6 @@ const client = new Client({
         GatewayIntentBits.DirectMessageReactions,
     ]
 });
-
-
 
 // Collections to store commands
 client.commands = new Map();
@@ -61,6 +60,9 @@ client.once(Events.ClientReady, async readyClient => {
     } catch (error) {
         console.error(error);
     }
+
+    // Restore poll collectors
+    await poll.restorePollCollectors(client);
 });
 
 // Handle regular commands
