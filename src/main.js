@@ -14,6 +14,8 @@ const client = new Client({
     ]
 });
 
+
+
 // Collections to store commands
 client.commands = new Map();
 client.slashCommands = new Map();
@@ -40,6 +42,10 @@ for (const file of commandFiles) {
 // When the client is ready, run this code (only once)
 client.once(Events.ClientReady, async readyClient => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+    // Send startup message
+    const startCommand = require('./commands/start.js');
+    await startCommand.execute(readyClient);
 
     // Register slash commands
     const rest = new REST().setToken(process.env.BOT_TOKEN);
@@ -69,8 +75,13 @@ client.on(Events.MessageCreate, async message => {
         const commandName = args.shift().toLowerCase();
 
         // Get the command from the commands collection
-        const command = client.commands.get(commandName);
-
+        let command = client.commands.get(commandName);
+        // If not found, check aliases
+        if (!command) {
+            command = Array.from(client.commands.values()).find(cmd =>
+                cmd.aliases && cmd.aliases.map(a => a.toLowerCase()).includes(commandName)
+            );
+        }
         // If command doesn't exist, ignore
         if (!command) return;
 
